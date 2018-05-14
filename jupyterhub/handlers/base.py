@@ -13,6 +13,9 @@ import time
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 import uuid
 
+#1626 issue fix
+from sqlalchemy.exc import SQLAlchemyError
+
 from jinja2 import TemplateNotFound
 
 from tornado.log import app_log
@@ -751,7 +754,12 @@ class BaseHandler(RequestHandler):
 
     @property
     def template_namespace(self):
-        user = self.get_current_user()
+        #1626 issue fix
+        try:
+            user = self.get_current_user()
+        except:
+            user = None
+
         ns = dict(
             base_url=self.hub.base_url,
             prefix=self.base_url,
@@ -810,6 +818,10 @@ class BaseHandler(RequestHandler):
             html = self.render_template('error.html', **ns)
 
         self.write(html)
+
+        # https://github.com/jupyterhub/jupyterhub/issues/1626
+        if exception and isinstance(exception, SQLAlchemyError):
+            self.db.rollback()
 
 
 class Template404(BaseHandler):

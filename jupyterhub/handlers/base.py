@@ -776,7 +776,6 @@ class BaseHandler(RequestHandler):
 
     def write_error(self, status_code, **kwargs):
         """render custom error pages"""
-        self.log.debug("********MAK DEBUG CALLED FOR******** %d", status_code)
         exc_info = kwargs.get('exc_info')
         message = ''
         exception = None
